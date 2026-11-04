@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   User,
   Bot,
+  Headphones,
 } from 'lucide-react';
 
 const DEMO_PRESETS = [
@@ -302,6 +303,16 @@ export const VoiceAssistantPage: React.FC = () => {
               ? 'Session ended. Click Start to begin a new hands-free conversation.'
               : 'Click Start Voice Session to begin continuous conversation.'}
           </p>
+
+          {/* Acoustic Echo Cancellation & Headphone Notice */}
+          {isSessionActive && (
+            <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 max-w-md mx-auto text-left sm:text-center">
+              <Headphones className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
+              <span>
+                <strong>AEC Active:</strong> Echo cancellation enabled. On phone speakers, keep volume moderate or use earphones for the best hands-free experience.
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Live Interim Transcript Bubble */}

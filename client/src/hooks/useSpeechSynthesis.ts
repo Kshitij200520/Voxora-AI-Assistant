@@ -11,6 +11,7 @@ export interface UseSpeechSynthesisReturn {
       rate?: number;
       pitch?: number;
       voiceName?: string;
+      onStart?: () => void;
       onEnd?: () => void;
       onError?: (err: any) => void;
     }
@@ -69,6 +70,7 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
         rate?: number;
         pitch?: number;
         voiceName?: string;
+        onStart?: () => void;
         onEnd?: () => void;
         onError?: (err: any) => void;
       } = {}
@@ -131,6 +133,7 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
       utterance.onstart = () => {
         console.log('[useSpeechSynthesis] 🔊 utterance.onstart: AI speaking: "' + text.slice(0, 40) + '..."');
         setIsSpeaking(true);
+        options.onStart?.();
       };
 
       utterance.onend = () => {

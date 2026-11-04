@@ -93,12 +93,104 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const conversationMessagesRef = useRef<ConversationMessage[]>([]);
   const retryCountRef = useRef<number>(0);
   const lastProcessedTextRef = useRef<string>('');
+  const lastSpokenAIResponseRef = useRef<string>('');
+  const lastSpokenTimestampRef = useRef<number>(0);
   const restartTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const aecStreamRef = useRef<MediaStream | null>(null);
 
   // Forward declarations
   const handleFinalTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
   const safeRestartMicRef = useRef<() => void>(() => {});
+
+  // Acoustic Echo Cancellation (AEC) Manager
+  const initAcousticEchoCancellation = useCallback(async () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+      console.warn('[AUDIO] getUserMedia not available in this browser');
+      return;
+    }
+
+    if (aecStreamRef.current) {
+      aecStreamRef.current.getTracks().forEach((track) => track.stop());
+      aecStreamRef.current = null;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+        },
+      });
+
+      aecStreamRef.current = stream;
+
+      const track = stream.getAudioTracks()[0];
+      if (track) {
+        const settings = track.getSettings?.() || {};
+        console.log(
+          `[AUDIO] Echo cancellation support detected (echoCancellation: ${settings.echoCancellation ?? true}, noiseSuppression: ${settings.noiseSuppression ?? true}, autoGainControl: ${settings.autoGainControl ?? true})`
+        );
+      }
+    } catch (err: any) {
+      console.warn('[AUDIO] getUserMedia with AEC constraints could not be initialized:', err);
+    }
+  }, []);
+
+  const releaseAcousticEchoCancellation = useCallback(() => {
+    if (aecStreamRef.current) {
+      aecStreamRef.current.getTracks().forEach((track) => track.stop());
+      aecStreamRef.current = null;
+      console.log('[AUDIO] Microphone stream released');
+    }
+  }, []);
+
+  // Helper: Detects whether incoming userText is an acoustic echo of the AI's own recent speech
+  const isEchoOfAISpeech = (userText: string, lastAiText: string, spokenTimestamp: number): boolean => {
+    if (!userText || !lastAiText) return false;
+
+    // Only consider speech that occurred within 8 seconds of AI speaking
+    const elapsed = Date.now() - spokenTimestamp;
+    if (elapsed > 8000) return false;
+
+    const clean = (str: string) =>
+      str
+        .toLowerCase()
+        .replace(/[^\w\s\u0900-\u097F]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const cleanUser = clean(userText);
+    const cleanAi = clean(lastAiText);
+
+    if (!cleanUser || !cleanAi) return false;
+
+    // 1. Direct substring match (at least 6 characters)
+    if (cleanAi.includes(cleanUser) && cleanUser.length >= 6) {
+      return true;
+    }
+
+    // 2. High word overlap containment (>= 50% of user words appear in AI response)
+    const userWords = cleanUser.split(' ').filter((w) => w.length > 1);
+    const aiWords = new Set(cleanAi.split(' ').filter((w) => w.length > 1));
+
+    if (userWords.length === 0) return false;
+
+    let matchingWords = 0;
+    for (const word of userWords) {
+      if (aiWords.has(word)) {
+        matchingWords++;
+      }
+    }
+
+    const overlapRatio = matchingWords / userWords.length;
+    if (userWords.length >= 2 && overlapRatio >= 0.5) {
+      return true;
+    }
+
+    return false;
+  };
 
   // Keep refs in sync
   useEffect(() => {
@@ -119,8 +211,9 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (sessionTimerRef.current) {
         clearInterval(sessionTimerRef.current);
       }
+      releaseAcousticEchoCancellation();
     };
-  }, []);
+  }, [releaseAcousticEchoCancellation]);
 
   const { speak, stop: stopSpeech, isSpeaking } = useSpeechSynthesis();
 
@@ -157,6 +250,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     abortListening,
     resetTranscript,
   } = useSpeechRecognition({
+    isAISpeaking: () => isAISpeakingRef.current,
     onStart: () => {
       // RULE: Set isListening TRUE and state to 'LISTENING' only when recognition.onstart actually fires!
       console.log('[VoiceContext] 🎙️ recognition.onstart confirmed! Setting state to LISTENING');
@@ -167,8 +261,12 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     },
     onSpeechStart: () => {
+      if (isAISpeakingRef.current) {
+        console.log('[AUDIO] Ignoring recognition during AI playback (onSpeechStart)');
+        return;
+      }
       console.log('[VoiceContext] 🗣️ User speech started');
-      if (voiceSessionActiveRef.current && !isAISpeakingRef.current && !isProcessingRef.current) {
+      if (voiceSessionActiveRef.current && !isProcessingRef.current) {
         setState('USER_SPEAKING');
       }
     },
@@ -181,8 +279,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     },
     onEnd: () => {
       console.log('[VoiceContext] 🛑 recognition.onend event received');
-      // If voice session is active, component mounted, and AI is neither speaking nor processing:
-      // Chrome disconnected due to silence timeout. Restart safely.
+      // If AI is currently speaking or processing, do not restart
       if (
         voiceSessionActiveRef.current &&
         isComponentMountedRef.current &&
@@ -201,8 +298,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setState('ERROR');
         endSession();
       } else {
-        // Non-fatal error (e.g. temporary network drop) -> try reconnecting
-        if (voiceSessionActiveRef.current && !isAISpeakingRef.current) {
+        // Non-fatal error -> try reconnecting if AI is not speaking
+        if (voiceSessionActiveRef.current && !isAISpeakingRef.current && !isProcessingRef.current) {
           safeRestartMicRef.current();
         }
       }
@@ -229,7 +326,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     retryCountRef.current += 1;
-    setState('RESTARTING'); // Show "Reconnecting microphone..." while restarting
+    setState('RESTARTING');
 
     if (restartTimerRef.current) {
       clearTimeout(restartTimerRef.current);
@@ -250,7 +347,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Safe restart of speech recognition after AI response finishes speaking
   const resumeListeningAfterAi = useCallback(() => {
-    console.log('[VoiceContext] 🔄 resumeListeningAfterAi called');
+    console.log('[AUDIO] AI speech ended');
     if (!voiceSessionActiveRef.current || !isComponentMountedRef.current) {
       console.log('[VoiceContext] Session inactive or unmounted; skipping resume.');
       return;
@@ -262,14 +359,15 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     lastProcessedTextRef.current = ''; // Reset so user can speak similar or repeated commands!
     resetTranscript();
 
-    // Set state to RESTARTING (amber) until recognition.onstart fires
+    // Set state to RESTARTING (amber) during recovery cooldown until recognition.onstart fires
     setState('RESTARTING');
 
+    console.log('[AUDIO] Microphone recovery delay (500ms)');
     if (restartTimerRef.current) {
       clearTimeout(restartTimerRef.current);
     }
 
-    // Allow 200ms audio buffer clearance for device output to switch back to input
+    // Configurable 500ms recovery delay: allows phone speaker reverberation to fully dissipate
     restartTimerRef.current = setTimeout(() => {
       if (
         voiceSessionActiveRef.current &&
@@ -277,14 +375,14 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         !isAISpeakingRef.current &&
         !isProcessingRef.current
       ) {
-        console.log('[VoiceContext] 🎙️ Calling startListening() after AI response completed...');
+        console.log('[AUDIO] Recognition restarted');
         startListening({ lang: currentLanguageRef.current });
       }
-    }, 200);
+    }, 500);
   }, [resetTranscript, startListening]);
 
   // Session Initiation
-  const startSession = useCallback(() => {
+  const startSession = useCallback(async () => {
     console.log('[VoiceContext] ▶️ Starting continuous voice session...');
     if (restartTimerRef.current) {
       clearTimeout(restartTimerRef.current);
@@ -300,6 +398,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     isAwaitingConfirmationRef.current = false;
     retryCountRef.current = 0;
     lastProcessedTextRef.current = '';
+    lastSpokenAIResponseRef.current = '';
+    lastSpokenTimestampRef.current = 0;
 
     setError(null);
     setDetectedActions([]);
@@ -311,13 +411,16 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState('STARTING');
     setIsModalOpen(true);
 
-    // Call startListening immediately (state will change to LISTENING once onstart fires)
+    // Initialize hardware / driver acoustic echo cancellation
+    await initAcousticEchoCancellation();
+
+    // Call startListening safely once AEC media stream is initialized
     setTimeout(() => {
-      if (voiceSessionActiveRef.current && isComponentMountedRef.current) {
+      if (voiceSessionActiveRef.current && isComponentMountedRef.current && !isAISpeakingRef.current) {
         startListening({ lang: currentLanguageRef.current });
       }
     }, 100);
-  }, [resetTranscript, startListening]);
+  }, [resetTranscript, startListening, initAcousticEchoCancellation]);
 
   // Session Termination
   const endSession = useCallback(() => {
@@ -335,8 +438,9 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSessionActive(false);
     abortListening();
     stopSpeech();
+    releaseAcousticEchoCancellation();
     setState('STOPPED');
-  }, [abortListening, stopSpeech]);
+  }, [abortListening, stopSpeech, releaseAcousticEchoCancellation]);
 
   const toggleSession = useCallback(() => {
     if (voiceSessionActiveRef.current) {
@@ -380,18 +484,24 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setConversationMessages((prev) => [...prev, exitUserMsg, exitAiMsg]);
         setSpokenResponse(farewellMessage);
 
+        console.log('[AUDIO] AI speech started');
+        isAISpeakingRef.current = true;
+        abortListening();
+
         speak(farewellMessage, {
           lang: language,
           rate: speechRate,
           onEnd: () => endSession(),
+          onError: () => endSession(),
         });
 
         endSession();
         return;
       }
 
-      // CRITICAL: Stop recognition cleanly so AI audio is never captured by microphone
-      stopListening();
+      // CRITICAL: Stop and abort recognition cleanly so AI audio is NEVER captured by microphone
+      abortListening();
+      console.log('[AUDIO] Recognition paused');
       isProcessingRef.current = true;
       setState('PROCESSING');
       setError(null);
@@ -450,9 +560,14 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setConversationMessages((prev) => [...prev, assistantMessage]);
 
           if (autoSpeak && aiMessage) {
+            console.log('[AUDIO] AI speech started');
             setState('AI_SPEAKING');
             isAISpeakingRef.current = true;
             isProcessingRef.current = false;
+            lastSpokenAIResponseRef.current = aiMessage;
+            lastSpokenTimestampRef.current = Date.now();
+            abortListening();
+
             speak(aiMessage, {
               lang: language,
               rate: speechRate,
@@ -497,13 +612,21 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setConversationMessages((prev) => [...prev, assistantConfirmMsg]);
 
           if (autoSpeak) {
+            console.log('[AUDIO] AI speech started');
             setState('AI_SPEAKING');
             isAISpeakingRef.current = true;
             isProcessingRef.current = false;
+            lastSpokenAIResponseRef.current = confirmMsg;
+            lastSpokenTimestampRef.current = Date.now();
+            abortListening();
+
             speak(confirmMsg, {
               lang: language,
               rate: speechRate,
               onEnd: () => {
+                resumeListeningAfterAi();
+              },
+              onError: () => {
                 resumeListeningAfterAi();
               },
             });
@@ -532,12 +655,18 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setConversationMessages((prev) => [...prev, errorAssistantMsg]);
 
         if (autoSpeak) {
+          console.log('[AUDIO] AI speech started');
           setState('AI_SPEAKING');
           isAISpeakingRef.current = true;
+          lastSpokenAIResponseRef.current = 'Sorry, there was an issue processing your request.';
+          lastSpokenTimestampRef.current = Date.now();
+          abortListening();
+
           speak('Sorry, there was an issue processing your request.', {
             lang: language,
             rate: speechRate,
             onEnd: () => resumeListeningAfterAi(),
+            onError: () => resumeListeningAfterAi(),
           });
         } else {
           resumeListeningAfterAi();
@@ -545,7 +674,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, autoSpeak, speechRate, resumeListeningAfterAi, speak, stopListening, endSession]
+    [language, autoSpeak, speechRate, resumeListeningAfterAi, speak, abortListening, endSession]
   );
 
   const executeConfirmedActions = async (
@@ -585,9 +714,14 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setConversationMessages((prev) => [...prev, assistantMessage]);
 
       if (autoSpeak && executionData.spokenResponse) {
+        console.log('[AUDIO] AI speech started');
         setState('AI_SPEAKING');
         isAISpeakingRef.current = true;
         isProcessingRef.current = false;
+        lastSpokenAIResponseRef.current = executionData.spokenResponse;
+        lastSpokenTimestampRef.current = Date.now();
+        abortListening();
+
         speak(executionData.spokenResponse, {
           lang: language,
           rate: speechRate,
@@ -610,12 +744,18 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isProcessingRef.current = false;
 
       if (autoSpeak) {
+        console.log('[AUDIO] AI speech started');
         setState('AI_SPEAKING');
         isAISpeakingRef.current = true;
+        lastSpokenAIResponseRef.current = 'Error: The operation could not be saved to the database.';
+        lastSpokenTimestampRef.current = Date.now();
+        abortListening();
+
         speak('Error: The operation could not be saved to the database.', {
           lang: language,
           rate: speechRate,
           onEnd: () => resumeListeningAfterAi(),
+          onError: () => resumeListeningAfterAi(),
         });
       } else {
         resumeListeningAfterAi();
@@ -623,9 +763,35 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  // Wire up final transcript handler
+  // Wire up final transcript handler with strict echo & self-voice safeguards
   handleFinalTranscriptRef.current = async (finalText: string) => {
-    if (!finalText || finalText.trim() === lastProcessedTextRef.current) return;
+    if (!finalText || !finalText.trim()) return;
+
+    // 1. Guard: Ignore all recognition during AI speech playback
+    if (isAISpeakingRef.current) {
+      console.log(`[AUDIO] Ignoring recognition during AI playback: "${finalText}"`);
+      resetTranscript();
+      return;
+    }
+
+    // 2. Guard: Ignore if already processing another command
+    if (isProcessingRef.current) {
+      console.log(`[AUDIO] Ignoring recognition while command is processing: "${finalText}"`);
+      return;
+    }
+
+    // 3. Guard: Acoustic Echo Rejection: discard if captured words match the AI's own recent response
+    if (isEchoOfAISpeech(finalText, lastSpokenAIResponseRef.current, lastSpokenTimestampRef.current)) {
+      console.log(`[AUDIO] Discarded echo transcript matching AI's own speech: "${finalText}"`);
+      resetTranscript();
+      return;
+    }
+
+    // 4. Guard: Duplicate transcript suppression
+    if (finalText.trim() === lastProcessedTextRef.current) {
+      console.log(`[AUDIO] Discarded duplicate transcript: "${finalText}"`);
+      return;
+    }
 
     // Check if user is confirming a pending destructive action verbally
     if (isAwaitingConfirmationRef.current && confirmationRequest) {

@@ -16,6 +16,7 @@ export interface UseSpeechRecognitionCallbacks {
   onSpeechEnd?: () => void;
   onEnd?: () => void;
   onError?: (error: string, isFatal: boolean) => void;
+  isAISpeaking?: () => boolean;
 }
 
 export interface UseSpeechRecognitionReturn {
@@ -80,10 +81,13 @@ export function useSpeechRecognition(
 
     if (recognitionRef.current) {
       try {
+        // Detach all listeners before aborting so no pending audio buffers fire callbacks
         recognitionRef.current.onstart = null;
         recognitionRef.current.onend = null;
         recognitionRef.current.onerror = null;
         recognitionRef.current.onresult = null;
+        recognitionRef.current.onspeechstart = null;
+        recognitionRef.current.onspeechend = null;
         recognitionRef.current.abort();
       } catch (e) {
         console.warn('[useSpeechRecognition] Error during abort:', e);
@@ -93,6 +97,7 @@ export function useSpeechRecognition(
 
     setIsListening(false);
     setIsUserSpeaking(false);
+    setInterimTranscript('');
   }, []);
 
   const stopListening = useCallback(() => {
@@ -126,6 +131,12 @@ export function useSpeechRecognition(
       }
 
       if (!isComponentMountedRef.current) {
+        return;
+      }
+
+      // Never start speech recognition while AI is playing voice
+      if (callbacksRef.current.isAISpeaking?.()) {
+        console.log('[AUDIO] Cannot start recognition while AI is speaking');
         return;
       }
 
@@ -170,6 +181,13 @@ export function useSpeechRecognition(
         recognition.lang = options.lang || 'en-IN';
 
         recognition.onstart = () => {
+          if (callbacksRef.current.isAISpeaking?.()) {
+            console.log('[AUDIO] Ignoring recognition during AI playback (onstart)');
+            try {
+              recognition.abort();
+            } catch {}
+            return;
+          }
           console.log('[useSpeechRecognition] 🎤 recognition.onstart: Microphone is ACTUALLY listening!');
           isRecognitionStartingRef.current = false;
           isRecognitionRunningRef.current = true;
@@ -179,18 +197,32 @@ export function useSpeechRecognition(
         };
 
         recognition.onspeechstart = () => {
+          if (callbacksRef.current.isAISpeaking?.()) {
+            console.log('[AUDIO] Ignoring recognition during AI playback (onspeechstart)');
+            return;
+          }
           console.log('[useSpeechRecognition] 🗣️ recognition.onspeechstart: User started speaking');
           setIsUserSpeaking(true);
           callbacksRef.current.onSpeechStart?.();
         };
 
         recognition.onspeechend = () => {
+          if (callbacksRef.current.isAISpeaking?.()) {
+            return;
+          }
           console.log('[useSpeechRecognition] 🤫 recognition.onspeechend: User stopped speaking');
           setIsUserSpeaking(false);
           callbacksRef.current.onSpeechEnd?.();
         };
 
         recognition.onresult = (event: any) => {
+          // Strict echo safeguard: ignore any recognition callbacks during AI playback
+          if (callbacksRef.current.isAISpeaking?.()) {
+            console.log('[AUDIO] Ignoring recognition during AI playback (onresult)');
+            setInterimTranscript('');
+            return;
+          }
+
           let interim = '';
           let final = '';
 
@@ -262,6 +294,12 @@ export function useSpeechRecognition(
           isRecognitionRunningRef.current = false;
           setIsListening(false);
           setIsUserSpeaking(false);
+
+          // If AI is currently speaking, do NOT auto-restart here (AI onEnd will resume with recovery delay)
+          if (callbacksRef.current.isAISpeaking?.()) {
+            console.log('[AUDIO] Recognition closed during AI playback; waiting for AI speech onEnd.');
+            return;
+          }
 
           // Inform parent for safe automatic reconnection if not manually stopped
           if (!isManuallyStoppedRef.current && isComponentMountedRef.current) {
