@@ -53,9 +53,9 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 min-w-0">
       {/* Category Breakdown (Donut Chart) */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 flex flex-col">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col min-w-0">
         <h4 className="text-sm font-semibold text-slate-200 mb-1">
           Spending by Category
         </h4>
@@ -68,15 +68,15 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
             No expense data available
           </div>
         ) : (
-          <div className="h-64">
+          <div className="h-56 sm:h-64 min-w-0 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  innerRadius={60}
-                  outerRadius={85}
+                  innerRadius={50}
+                  outerRadius={75}
                   paddingAngle={4}
                   dataKey="value"
                 >
@@ -94,14 +94,14 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
             </ResponsiveContainer>
 
             {/* Custom Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-1.5 mt-2">
               {pieData.map((entry, index) => (
                 <div key={entry.name} className="flex items-center gap-1.5 text-xs text-slate-400">
                   <span
-                    className="w-2.5 h-2.5 rounded-full"
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
-                  <span>{entry.name}</span>
+                  <span className="truncate max-w-[120px]">{entry.name}</span>
                 </div>
               ))}
             </div>
@@ -110,7 +110,7 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
       </div>
 
       {/* Monthly Trend (Bar Chart) */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 flex flex-col">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col min-w-0">
         <h4 className="text-sm font-semibold text-slate-200 mb-1">
           Monthly Expense Trend
         </h4>
@@ -123,7 +123,7 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({
             No historical monthly data recorded yet
           </div>
         ) : (
-          <div className="h-64">
+          <div className="h-56 sm:h-64 min-w-0 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={monthlyData}

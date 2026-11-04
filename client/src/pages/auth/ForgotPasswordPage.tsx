@@ -31,19 +31,19 @@ export const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center px-3.5 sm:px-4 py-8 sm:py-12 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-rose-600/10 via-purple-600/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-600 to-indigo-600 text-white shadow-lg shadow-rose-600/30 mb-4">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Reset Your Password</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Reset Your Password</h1>
           <p className="text-xs text-slate-400 mt-1">We'll email you a secure link to reset your credentials</p>
         </div>
 
-        <div className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-7 shadow-2xl shadow-black/50">
+        <div className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-5 sm:p-7 shadow-2xl shadow-black/50">
           {error && (
             <div className="mb-5 flex items-start gap-2.5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

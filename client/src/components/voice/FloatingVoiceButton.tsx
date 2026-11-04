@@ -14,7 +14,7 @@ export const FloatingVoiceButton: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
       <div className="relative group">
         {/* Glow backdrop */}
         <div
@@ -31,7 +31,7 @@ export const FloatingVoiceButton: React.FC = () => {
         <button
           type="button"
           onClick={handleClick}
-          className={`relative flex items-center gap-2.5 px-4 py-3 rounded-full text-white font-medium text-sm shadow-xl transition-all duration-300 ${
+          className={`relative flex items-center gap-2 sm:gap-2.5 p-3 sm:px-4 sm:py-3 rounded-full text-white font-medium text-xs sm:text-sm shadow-xl transition-all duration-300 active:scale-95 ${
             isListening
               ? 'bg-rose-600 hover:bg-rose-700'
               : isSpeaking

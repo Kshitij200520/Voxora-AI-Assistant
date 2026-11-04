@@ -52,14 +52,14 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
   return (
     <>
       <div
-        className={`bg-[#111827] border rounded-2xl p-5 transition-all duration-200 group ${
+        className={`bg-[#111827] border rounded-2xl p-4 sm:p-5 transition-all duration-200 group ${
           isDone
             ? 'border-white/5 opacity-60 bg-[#0e1422]'
             : 'border-white/10 hover:border-white/20 shadow-sm'
         }`}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3.5">
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="flex items-start gap-3 sm:gap-3.5 min-w-0 flex-1">
             <div
               className={`p-2.5 rounded-xl border shrink-0 ${
                 isDone
@@ -70,10 +70,10 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
               <Bell className="w-5 h-5" />
             </div>
 
-            <div>
+            <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <h4
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-semibold break-words ${
                     isDone ? 'line-through text-slate-400' : 'text-slate-100'
                   }`}
                 >
@@ -83,20 +83,21 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
               </div>
 
               {reminder.description && (
-                <p className="text-xs text-slate-400 mt-1 line-clamp-2">
+                <p className="text-xs text-slate-400 mt-1 line-clamp-2 break-words">
                   {reminder.description}
                 </p>
               )}
 
-              <div className="mt-3 flex items-center gap-2 text-xs text-purple-300 bg-purple-950/30 border border-purple-500/20 px-3 py-1 rounded-lg w-fit">
-                <Clock className="w-3.5 h-3.5" />
+              <div className="mt-3 flex items-center gap-2 text-xs text-purple-300 bg-purple-950/30 border border-purple-500/20 px-3 py-1 rounded-lg w-fit max-w-full flex-wrap">
+                <Clock className="w-3.5 h-3.5 shrink-0" />
                 <span>
                   {new Date(reminder.dueAt).toLocaleString('en-IN', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric',
-                    hour: '2-digit',
+                    hour: 'numeric',
                     minute: '2-digit',
+                    hour12: true,
                   })}
                 </span>
               </div>
@@ -104,13 +105,14 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+          <div className="flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity shrink-0">
             {!isDone && (
               <button
                 type="button"
                 onClick={() => onMarkComplete(reminder)}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
                 title="Mark completed"
+                aria-label="Mark completed"
               >
                 <CheckCircle2 className="w-4 h-4" />
               </button>
@@ -120,6 +122,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
               onClick={() => onEdit(reminder)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
               title="Edit Reminder"
+              aria-label="Edit Reminder"
             >
               <Edit2 className="w-3.5 h-3.5" />
             </button>
@@ -128,6 +131,7 @@ export const ReminderCard: React.FC<ReminderCardProps> = ({
               onClick={() => setShowDeleteConfirm(true)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
               title="Delete Reminder"
+              aria-label="Delete Reminder"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

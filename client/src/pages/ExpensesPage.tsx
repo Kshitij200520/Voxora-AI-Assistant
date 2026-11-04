@@ -134,16 +134,16 @@ export const ExpensesPage: React.FC = () => {
       </div>
 
       {/* Summary Total Card */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 flex items-center justify-between">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <span className="text-xs text-slate-400 font-medium">Filtered Total Spending</span>
-          <h3 className="text-2xl font-bold text-white mt-1">
+          <h3 className="text-xl sm:text-2xl font-bold text-white mt-1 break-words">
             ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </h3>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <span className="text-xs text-slate-400 font-medium">Record Count</span>
-          <p className="text-lg font-semibold text-slate-200 mt-1">
+          <p className="text-base sm:text-lg font-semibold text-slate-200 mt-0.5 sm:mt-1">
             {expenses.length} transaction{expenses.length === 1 ? '' : 's'}
           </p>
         </div>

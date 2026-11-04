@@ -113,10 +113,10 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       {/* Profile Overview Card */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-indigo-600/30">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 sm:pb-6 border-b border-white/10">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-lg sm:text-xl font-bold text-white shadow-lg shadow-indigo-600/30 shrink-0">
               {user?.fullName
                 ?.split(' ')
                 .map((n) => n[0])
@@ -124,20 +124,20 @@ export const ProfilePage: React.FC = () => {
                 .join('')
                 .toUpperCase() || 'U'}
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">{user?.fullName || 'User'}</h2>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-slate-400 flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5 text-slate-500" />
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold text-white truncate">{user?.fullName || 'User'}</h2>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <span className="text-xs text-slate-400 flex items-center gap-1 break-all">
+                  <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                   {user?.email}
                 </span>
                 {user?.isEmailVerified ? (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                     <ShieldCheck className="w-3 h-3" />
                     Verified
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
                     <AlertTriangle className="w-3 h-3" />
                     Unverified
                   </span>
@@ -150,7 +150,7 @@ export const ProfilePage: React.FC = () => {
             <button
               onClick={handleResendVerification}
               disabled={isResending}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 rounded-xl text-xs font-medium transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 text-indigo-300 rounded-xl text-xs font-medium transition-colors self-start sm:self-center"
             >
               <Send className="w-3.5 h-3.5" />
               {isResending ? 'Sending...' : 'Resend Verification'}

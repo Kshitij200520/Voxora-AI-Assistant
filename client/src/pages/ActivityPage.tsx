@@ -104,32 +104,32 @@ export const ActivityPage: React.FC = () => {
           voiceHint="I spent 500 rupees on travel"
         />
       ) : (
-        <div className="bg-[#111827] border border-white/10 rounded-2xl p-6">
-          <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-white/10">
+        <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6">
+          <div className="relative pl-5 sm:pl-6 space-y-5 sm:space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-white/10">
             {logs.map((log) => {
               const isSuccess = log.status === 'success';
               return (
                 <div key={log._id} className="relative group">
                   {/* Timeline bullet dot */}
                   <div
-                    className={`absolute -left-[27px] top-1.5 w-4 h-4 rounded-full border-2 border-[#111827] flex items-center justify-center ${
+                    className={`absolute -left-[23px] sm:-left-[27px] top-1.5 w-4 h-4 rounded-full border-2 border-[#111827] flex items-center justify-center ${
                       isSuccess ? 'bg-indigo-500' : 'bg-rose-500'
                     }`}
                   />
 
-                  <div className="bg-[#0B0F19] border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-3">
-                        <div className="p-2 rounded-lg bg-white/5 border border-white/5 mt-0.5">
+                  <div className="bg-[#0B0F19] border border-white/5 rounded-xl p-3.5 sm:p-4 hover:border-white/10 transition-colors">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
+                      <div className="flex items-start gap-2.5 sm:gap-3 min-w-0 flex-1">
+                        <div className="p-2 rounded-lg bg-white/5 border border-white/5 mt-0.5 shrink-0">
                           {getEntityIcon(log.entityType)}
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-xs font-semibold text-slate-200">
                               {log.actionType}
                             </span>
                             <span
-                              className={`text-[10px] font-medium px-2 py-0.2 rounded-full border ${
+                              className={`text-[10px] font-medium px-2 py-0.2 rounded-full border shrink-0 ${
                                 isSuccess
                                   ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                                   : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
@@ -138,20 +138,21 @@ export const ActivityPage: React.FC = () => {
                               {log.status}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-300 mt-1 font-medium">
+                          <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium break-words">
                             {log.description}
                           </p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 shrink-0">
-                        <Clock className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-500 shrink-0 pl-11 sm:pl-0">
+                        <Clock className="w-3.5 h-3.5 shrink-0" />
                         <span>
                           {new Date(log.createdAt).toLocaleString('en-IN', {
                             month: 'short',
                             day: 'numeric',
-                            hour: '2-digit',
+                            hour: 'numeric',
                             minute: '2-digit',
+                            hour12: true,
                           })}
                         </span>
                       </div>

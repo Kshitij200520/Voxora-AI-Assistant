@@ -74,29 +74,29 @@ export const VoiceModal: React.FC = () => {
   const isWorking = state === 'PROCESSING' || state === 'PROCESSING_AI' || state === 'EXECUTING';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
-      <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-[95vw] sm:max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-5 py-3.5 border-b border-white/10 flex items-center justify-between bg-[#151C2C]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-white/10 flex items-center justify-between bg-[#151C2C] shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-sm">VOXORA Voice Mode</h3>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <h3 className="font-semibold text-white text-xs sm:text-sm truncate">VOXORA Voice Mode</h3>
                 {isSessionActive && (
-                  <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-mono font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
                     <Clock className="w-3 h-3 animate-spin" />
                     {formatDuration(sessionDuration)}
                   </span>
                 )}
               </div>
-              <p className="text-[10px] text-slate-400">Continuous Hands-Free Assistant</p>
+              <p className="text-[10px] text-slate-400 truncate">Continuous Hands-Free Assistant</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Language Selector */}
             <div className="flex bg-[#0B0F19] p-0.5 rounded-lg border border-white/10 text-xs">
               <button
@@ -126,6 +126,7 @@ export const VoiceModal: React.FC = () => {
             <button
               onClick={closeModal}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5 transition-colors"
+              aria-label="Close voice modal"
             >
               <X className="w-5 h-5" />
             </button>
@@ -133,12 +134,12 @@ export const VoiceModal: React.FC = () => {
         </div>
 
         {/* Content Body */}
-        <div className="p-5 overflow-y-auto space-y-4 flex-1">
+        <div className="p-3.5 sm:p-5 overflow-y-auto space-y-3 sm:space-y-4 flex-1">
           {/* Status Badge & Top Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
             <VoiceStatusBadge state={state} />
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
               {isSpeaking && (
                 <button
                   onClick={stopSpeaking}
@@ -275,7 +276,7 @@ export const VoiceModal: React.FC = () => {
                   )}
 
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                    className={`max-w-[88%] sm:max-w-[80%] break-words rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-indigo-600 text-white rounded-tr-sm shadow-sm'
                         : 'bg-[#0B0F19] border border-white/10 text-slate-200 rounded-tl-sm'
@@ -285,9 +286,9 @@ export const VoiceModal: React.FC = () => {
                       <span className="font-semibold uppercase">
                         {msg.role === 'user' ? 'You' : 'VOXORA'}
                       </span>
-                      <span>{msg.timestamp}</span>
+                      <span className="shrink-0">{msg.timestamp}</span>
                     </div>
-                    <p className="font-normal">{msg.content}</p>
+                    <p className="font-normal break-words">{msg.content}</p>
                   </div>
 
                   {msg.role === 'user' && (
@@ -303,29 +304,29 @@ export const VoiceModal: React.FC = () => {
 
           {/* Confirmation Box */}
           {confirmationRequest && (
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-2">
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 sm:p-3.5 space-y-2">
               <div className="flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <span className="text-xs font-semibold text-amber-300">
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-semibold text-amber-300 block">
                     Confirmation Required
                   </span>
-                  <p className="text-xs text-amber-200/90 mt-0.5">{confirmationRequest.message}</p>
+                  <p className="text-xs text-amber-200/90 mt-0.5 break-words">{confirmationRequest.message}</p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-1">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={cancelConfirmation}
-                  className="px-2.5 py-1 rounded-lg text-xs font-medium text-slate-300 hover:bg-white/5"
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-white/5 text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={confirmAction}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white"
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white text-center"
                 >
                   Confirm Delete
                 </button>

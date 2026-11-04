@@ -80,7 +80,7 @@ export const RemindersPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={startVoiceInput}
@@ -104,25 +104,25 @@ export const RemindersPage: React.FC = () => {
 
       {/* Notification Status Banner */}
       <div
-        className={`p-4 rounded-2xl border flex items-start justify-between gap-4 text-xs ${
+        className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 text-xs ${
           notificationPermission === 'granted'
             ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
             : 'bg-amber-500/10 border-amber-500/20 text-amber-300'
         }`}
       >
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 min-w-0">
           {notificationPermission === 'granted' ? (
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           ) : (
             <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
           )}
-          <div>
-            <span className="font-semibold block">
+          <div className="min-w-0">
+            <span className="font-semibold block truncate">
               {notificationPermission === 'granted'
                 ? 'Browser Notifications Active'
                 : 'Browser Notifications Disabled'}
             </span>
-            <p className="mt-0.5 opacity-90">
+            <p className="mt-0.5 opacity-90 leading-relaxed">
               {notificationPermission === 'granted'
                 ? 'You will receive native desktop notifications when scheduled alerts are due while the app is running.'
                 : 'VOXORA AI uses the Web Notifications API. Please allow notification permissions so alerts can pop up on time.'}
@@ -134,7 +134,7 @@ export const RemindersPage: React.FC = () => {
           <button
             type="button"
             onClick={requestNotificationPermission}
-            className="px-3.5 py-1.5 rounded-xl bg-amber-500 text-slate-900 font-semibold text-xs shrink-0 hover:bg-amber-400 transition-colors"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-amber-500 text-slate-900 font-semibold text-xs shrink-0 hover:bg-amber-400 transition-colors text-center"
           >
             Enable Notifications
           </button>
@@ -142,10 +142,10 @@ export const RemindersPage: React.FC = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex bg-[#111827] p-1 rounded-xl border border-white/10 text-xs w-fit">
+      <div className="flex bg-[#111827] p-1 rounded-xl border border-white/10 text-xs w-full sm:w-fit overflow-x-auto">
         <button
           onClick={() => setStatusFilter('all')}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
             statusFilter === 'all'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
@@ -155,7 +155,7 @@ export const RemindersPage: React.FC = () => {
         </button>
         <button
           onClick={() => setStatusFilter('scheduled')}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
             statusFilter === 'scheduled'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-slate-200'
@@ -165,7 +165,7 @@ export const RemindersPage: React.FC = () => {
         </button>
         <button
           onClick={() => setStatusFilter('completed')}
-          className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+          className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
             statusFilter === 'completed'
               ? 'bg-indigo-600 text-white shadow-sm'
               : 'text-slate-400 hover:text-slate-200'

@@ -61,26 +61,26 @@ export const DashboardPage: React.FC = () => {
   }, [fetchDashboardData]);
 
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <div className="space-y-6 sm:space-y-8 animate-fadeIn">
       {/* Quick Hero Banner */}
-      <div className="bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-transparent border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-transparent border border-indigo-500/20 rounded-2xl p-4 sm:p-6 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="relative z-10">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-medium mb-2">
             <Sparkles className="w-3.5 h-3.5" /> Voice AI Hackathon MVP
           </div>
-          <h2 className="text-xl font-bold text-white tracking-tight">
+          <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
             Speak. Understand. Act.
           </h2>
-          <p className="text-xs text-slate-300 max-w-xl mt-1">
+          <p className="text-xs text-slate-300 max-w-xl mt-1 leading-relaxed">
             VOXORA AI listens to your natural voice, extracts multi-intent actions via Groq LLM, executes real CRUD in MongoDB Atlas, and responds aloud.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 relative z-10">
+        <div className="flex items-center gap-2.5 relative z-10 self-start sm:self-auto">
           <button
             type="button"
             onClick={startVoiceInput}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-glow-primary transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-glow-primary transition-all active:scale-95"
           >
             <Mic className="w-4 h-4" /> Speak Command
           </button>
@@ -88,7 +88,7 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
         <StatCard
           title="Total Spent (All-Time)"
           value={`₹${(summary?.totalExpenses || 0).toLocaleString('en-IN')}`}
@@ -159,17 +159,17 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* Recent Activity and Transactions Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 min-w-0">
         {/* Recent Transactions */}
-        <div className="bg-[#111827] border border-white/10 rounded-2xl p-6">
+        <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6 min-w-0">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-100">Recent Expenses</h3>
-              <p className="text-xs text-slate-400">Latest financial records in MongoDB</p>
+            <div className="min-w-0 pr-2">
+              <h3 className="text-sm font-semibold text-slate-100 truncate">Recent Expenses</h3>
+              <p className="text-xs text-slate-400 truncate">Latest financial records in MongoDB</p>
             </div>
             <Link
               to="/expenses"
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 shrink-0"
             >
               View all <ArrowRight className="w-3 h-3" />
             </Link>
@@ -182,19 +182,19 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="divide-y divide-white/5">
               {summary.recentExpenses.map((expense) => (
-                <div key={expense._id} className="py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <div key={expense._id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                       <Receipt className="w-3.5 h-3.5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-slate-200">{expense.description}</p>
-                      <p className="text-[11px] text-slate-400">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-slate-200 truncate">{expense.description}</p>
+                      <p className="text-[11px] text-slate-400 truncate">
                         {expense.category} • {new Date(expense.date).toLocaleDateString('en-IN')}
                       </p>
                     </div>
                   </div>
-                  <span className="text-sm font-bold text-slate-100">
+                  <span className="text-sm font-bold text-slate-100 shrink-0">
                     ₹{expense.amount.toLocaleString('en-IN')}
                   </span>
                 </div>
@@ -204,15 +204,15 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Recent Activity Log */}
-        <div className="bg-[#111827] border border-white/10 rounded-2xl p-6">
+        <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6 min-w-0">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-100">Live Activity Audit</h3>
-              <p className="text-xs text-slate-400">Actions executed by user or Groq AI</p>
+            <div className="min-w-0 pr-2">
+              <h3 className="text-sm font-semibold text-slate-100 truncate">Live Activity Audit</h3>
+              <p className="text-xs text-slate-400 truncate">Actions executed by user or Groq AI</p>
             </div>
             <Link
               to="/activity"
-              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
+              className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 shrink-0"
             >
               Audit log <ArrowRight className="w-3 h-3" />
             </Link>
@@ -225,10 +225,10 @@ export const DashboardPage: React.FC = () => {
           ) : (
             <div className="divide-y divide-white/5">
               {summary.recentActivities.map((act) => (
-                <div key={act._id} className="py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-200">{act.description}</p>
-                    <p className="text-[11px] text-slate-400">
+                <div key={act._id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-slate-200 truncate">{act.description}</p>
+                    <p className="text-[11px] text-slate-400 truncate">
                       {new Date(act.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -237,7 +237,7 @@ export const DashboardPage: React.FC = () => {
                     </p>
                   </div>
                   <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border shrink-0 ${
                       act.status === 'success'
                         ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
                         : 'bg-amber-500/10 border-amber-500/20 text-amber-400'

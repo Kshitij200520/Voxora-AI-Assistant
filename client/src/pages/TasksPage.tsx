@@ -84,7 +84,7 @@ export const TasksPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
             type="button"
             onClick={startVoiceInput}
@@ -109,10 +109,10 @@ export const TasksPage: React.FC = () => {
       {/* Tabs & Search Filter Bar */}
       <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Status Tabs */}
-        <div className="flex bg-[#0B0F19] p-1 rounded-xl border border-white/10 text-xs w-full md:w-auto">
+        <div className="flex bg-[#0B0F19] p-1 rounded-xl border border-white/10 text-xs w-full md:w-auto overflow-x-auto">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
               statusFilter === 'all'
                 ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
@@ -122,7 +122,7 @@ export const TasksPage: React.FC = () => {
           </button>
           <button
             onClick={() => setStatusFilter('pending')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
               statusFilter === 'pending'
                 ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'
@@ -132,7 +132,7 @@ export const TasksPage: React.FC = () => {
           </button>
           <button
             onClick={() => setStatusFilter('completed')}
-            className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-all shrink-0 ${
               statusFilter === 'completed'
                 ? 'bg-indigo-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-slate-200'

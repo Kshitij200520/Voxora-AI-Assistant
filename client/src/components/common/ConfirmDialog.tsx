@@ -39,11 +39,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <p className="text-sm text-slate-300 leading-relaxed mt-1">{message}</p>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-white/10">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-2.5 pt-4 border-t border-white/10">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/5 transition-all"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:bg-white/5 transition-all text-center"
           >
             {cancelText}
           </button>
@@ -53,7 +53,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
               onConfirm();
               onClose();
             }}
-            className={`px-4 py-2 rounded-xl text-xs font-medium text-white shadow-sm transition-all ${
+            className={`w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-white shadow-sm transition-all text-center ${
               isDestructive
                 ? 'bg-rose-600 hover:bg-rose-500'
                 : 'bg-indigo-600 hover:bg-indigo-500'

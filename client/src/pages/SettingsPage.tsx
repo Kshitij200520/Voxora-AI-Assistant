@@ -224,11 +224,11 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       {/* 1. Automated Email Reminders Section */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-white/10">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 pb-4 sm:pb-5 border-b border-white/10">
           <div>
             <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Mail className="w-4 h-4 text-indigo-400" />
+              <Mail className="w-4 h-4 text-indigo-400 shrink-0" />
               Automated Email Reminders & Notifications
             </h2>
             <p className="text-xs text-slate-400 mt-1">
@@ -248,20 +248,20 @@ export const SettingsPage: React.FC = () => {
         </div>
 
         {/* Registered Email Card */}
-        <div className="bg-[#0B0F19] rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5">
-          <div>
+        <div className="bg-[#0B0F19] rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/5">
+          <div className="min-w-0 flex-1">
             <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold block mb-0.5">
               Registered Recipient Email
             </span>
-            <div className="flex items-center gap-2.5">
-              <span className="text-sm font-semibold text-white font-mono">{user?.email}</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-semibold text-white font-mono break-all">{user?.email}</span>
               {user?.isEmailVerified ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                   <ShieldCheck className="w-3 h-3" />
                   Verified
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
                   <AlertTriangle className="w-3 h-3" />
                   Unverified
                 </span>

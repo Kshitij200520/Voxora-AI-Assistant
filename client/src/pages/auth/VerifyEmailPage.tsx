@@ -55,19 +55,19 @@ export const VerifyEmailPage: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#080C14] flex flex-col justify-center items-center px-3.5 sm:px-4 py-8 sm:py-12 relative overflow-hidden">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-emerald-600/15 via-indigo-600/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-indigo-600 text-white shadow-lg shadow-emerald-600/30 mb-4">
             <Sparkles className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Email Verification</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">Email Verification</h1>
           <p className="text-xs text-slate-400 mt-1">Activating automated voice & reminder email dispatches</p>
         </div>
 
-        <div className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-7 shadow-2xl shadow-black/50 text-center">
+        <div className="bg-[#111827]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-5 sm:p-7 shadow-2xl shadow-black/50 text-center">
           {isLoading ? (
             <div className="py-8">
               <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto mb-3" />

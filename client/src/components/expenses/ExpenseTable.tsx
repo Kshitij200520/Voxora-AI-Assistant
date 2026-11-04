@@ -119,37 +119,50 @@ export const ExpenseTable: React.FC<ExpenseTableProps> = ({
           return (
             <div
               key={expense._id}
-              className="bg-[#111827] border border-white/10 rounded-xl p-4 space-y-3"
+              className="bg-[#111827] border border-white/10 rounded-2xl p-4 space-y-3 shadow-sm"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <h4 className="font-semibold text-slate-100 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-semibold text-slate-100 text-sm break-words">
                     {expense.description}
                   </h4>
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 mt-1.5 rounded-full text-[11px] font-medium border ${catClass}`}
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 mt-2 rounded-full text-[11px] font-medium border ${catClass}`}
                   >
-                    <Tag className="w-2.5 h-2.5" />
+                    <Tag className="w-2.5 h-2.5 shrink-0" />
                     {expense.category}
                   </span>
                 </div>
-                <span className="text-base font-bold text-white">
+                <span className="text-base font-bold text-white shrink-0">
                   ₹{expense.amount.toLocaleString('en-IN')}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-white/5">
-                <span>{new Date(expense.date).toLocaleDateString('en-IN')}</span>
-                <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-white/5">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                  {new Date(expense.date).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+                <div className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     onClick={() => onEdit(expense)}
-                    className="p-1 text-slate-400 hover:text-slate-200"
+                    className="p-2 rounded-lg bg-white/5 text-slate-300 hover:text-white border border-white/5 hover:border-white/10 transition-colors"
+                    title="Edit Expense"
+                    aria-label="Edit Expense"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
+                    type="button"
                     onClick={() => setDeleteTarget(expense)}
-                    className="p-1 text-slate-400 hover:text-rose-400"
+                    className="p-2 rounded-lg bg-rose-500/10 text-rose-400 hover:text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition-colors"
+                    title="Delete Expense"
+                    aria-label="Delete Expense"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>

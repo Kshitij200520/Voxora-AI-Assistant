@@ -120,26 +120,26 @@ export const VoiceAssistantPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn pb-12">
       {/* Top Session Header */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30 shrink-0">
             <Radio className="w-5 h-5 animate-pulse" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base font-bold text-white tracking-tight">Continuous Voice Mode</h1>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-sm sm:text-base font-bold text-white tracking-tight">Continuous Voice Mode</h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                 Alexa-Style Hands-Free
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
               Click once to speak. Listen & talk continuously without pressing any buttons.
             </p>
           </div>
         </div>
 
         {/* Controls Bar */}
-        <div className="flex items-center gap-2.5 self-start sm:self-center">
+        <div className="flex items-center gap-2 sm:gap-2.5 self-start sm:self-center flex-wrap">
           {/* Language Selector */}
           <div className="flex bg-[#0B0F19] p-1 rounded-xl border border-white/10 text-xs">
             <button
@@ -175,12 +175,12 @@ export const VoiceAssistantPage: React.FC = () => {
       </div>
 
       {/* Main Conversation Engine Card */}
-      <div className="bg-[#111827] border border-white/10 rounded-2xl p-6 relative overflow-hidden shadow-2xl flex flex-col min-h-[480px]">
+      <div className="bg-[#111827] border border-white/10 rounded-2xl p-4 sm:p-6 relative overflow-hidden shadow-2xl flex flex-col min-h-[420px] sm:min-h-[480px]">
         {/* Status Bar */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-white/10">
           <VoiceStatusBadge state={state} />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap self-end sm:self-auto">
             {isSpeaking && (
               <button
                 type="button"
@@ -327,7 +327,7 @@ export const VoiceAssistantPage: React.FC = () => {
             conversationMessages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex gap-2 sm:gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
                   <div className="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shrink-0 mt-1">
@@ -336,20 +336,20 @@ export const VoiceAssistantPage: React.FC = () => {
                 )}
 
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed ${
+                  className={`max-w-[88%] sm:max-w-[80%] break-words rounded-2xl px-3.5 py-2.5 sm:px-4 sm:py-3 text-xs leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-indigo-600 text-white rounded-tr-sm shadow-md shadow-indigo-600/20'
                       : 'bg-[#0B0F19] border border-white/10 text-slate-200 rounded-tl-sm'
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-4 mb-1 text-[10px] opacity-75">
+                  <div className="flex items-center justify-between gap-3 mb-1 text-[10px] opacity-75">
                     <span className="font-semibold uppercase tracking-wider">
                       {msg.role === 'user' ? 'You' : 'VOXORA AI'}
                     </span>
-                    <span>{msg.timestamp}</span>
+                    <span className="shrink-0">{msg.timestamp}</span>
                   </div>
 
-                  <p className="text-sm font-normal">{msg.content}</p>
+                  <p className="text-xs sm:text-sm font-normal break-words">{msg.content}</p>
 
                   {/* Render any actions executed in this turn */}
                   {msg.actions && msg.actions.length > 0 && (
@@ -360,11 +360,11 @@ export const VoiceAssistantPage: React.FC = () => {
                       {msg.actions.map((action, i) => (
                         <div
                           key={i}
-                          className="flex items-center gap-1.5 text-[11px] bg-white/5 px-2 py-1 rounded-lg border border-white/5"
+                          className="flex items-center gap-1.5 text-[11px] bg-white/5 px-2 py-1 rounded-lg border border-white/5 max-w-full overflow-hidden"
                         >
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span className="font-semibold text-slate-300">{action.type}:</span>
-                          <span className="text-slate-400 truncate max-w-[220px]">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <span className="font-semibold text-slate-300 shrink-0">{action.type}:</span>
+                          <span className="text-slate-400 truncate break-all max-w-[140px] sm:max-w-[220px]">
                             {JSON.stringify(action.payload)}
                           </span>
                         </div>
@@ -386,29 +386,29 @@ export const VoiceAssistantPage: React.FC = () => {
 
         {/* Destructive Action Verbal Confirmation Box */}
         {confirmationRequest && (
-          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-2 animate-fadeIn">
+          <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 sm:p-4 space-y-2 animate-fadeIn">
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <span className="text-xs font-semibold text-amber-300">
+              <div className="flex-1 min-w-0">
+                <span className="text-xs font-semibold text-amber-300 block">
                   Confirmation Required (Say "Yes" or "Cancel")
                 </span>
-                <p className="text-xs text-amber-200/90 mt-0.5">{confirmationRequest.message}</p>
+                <p className="text-xs text-amber-200/90 mt-0.5 break-words">{confirmationRequest.message}</p>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-1">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={cancelConfirmation}
-                className="px-3 py-1 rounded-lg text-xs font-medium text-slate-300 hover:bg-white/5 transition-all"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-white/5 transition-all text-center"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmAction}
-                className="px-3.5 py-1 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition-all"
+                className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm transition-all text-center"
               >
                 Yes, Delete
               </button>

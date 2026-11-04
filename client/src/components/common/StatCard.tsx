@@ -33,8 +33,8 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       <div className="mt-3">
-        <h3 className="text-2xl font-bold text-white tracking-tight">{value}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-1">{subtitle}</p>}
+        <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight break-words">{value}</h3>
+        {subtitle && <p className="text-xs text-slate-400 mt-1 truncate">{subtitle}</p>}
       </div>
 
       {trend && (
