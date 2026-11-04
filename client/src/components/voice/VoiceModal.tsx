@@ -249,12 +249,12 @@ export const VoiceModal: React.FC = () => {
                 : 'Click mic or Start Session to speak'}
             </p>
 
-            {/* Acoustic Echo Cancellation & Headphone Notice */}
+            {/* Turn-Based Voice Coordination Notice */}
             {isSessionActive && (
               <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-300 max-w-sm mx-auto">
                 <Headphones className="w-3 h-3 shrink-0 text-indigo-400" />
                 <span>
-                  <strong>AEC Active:</strong> Echo cancellation enabled. On phone speakers, moderate volume or earphones recommended.
+                  <strong>Turn-Based Voice:</strong> Mic turns off while AI speaks. Moderate volume recommended.
                 </span>
               </div>
             )}

@@ -304,12 +304,12 @@ export const VoiceAssistantPage: React.FC = () => {
               : 'Click Start Voice Session to begin continuous conversation.'}
           </p>
 
-          {/* Acoustic Echo Cancellation & Headphone Notice */}
+          {/* Turn-Based Voice Coordination Notice */}
           {isSessionActive && (
             <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 max-w-md mx-auto text-left sm:text-center">
               <Headphones className="w-3.5 h-3.5 shrink-0 text-indigo-400" />
               <span>
-                <strong>AEC Active:</strong> Echo cancellation enabled. On phone speakers, keep volume moderate or use earphones for the best hands-free experience.
+                <strong>Turn-Based Voice:</strong> Mic turns off automatically while AI speaks. Moderate volume or earphones recommended on phones.
               </span>
             </div>
           )}

@@ -97,54 +97,10 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const lastSpokenTimestampRef = useRef<number>(0);
   const restartTimerRef = useRef<NodeJS.Timeout | null>(null);
   const sessionTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const aecStreamRef = useRef<MediaStream | null>(null);
 
   // Forward declarations
   const handleFinalTranscriptRef = useRef<(text: string) => Promise<void>>(async () => {});
   const safeRestartMicRef = useRef<() => void>(() => {});
-
-  // Acoustic Echo Cancellation (AEC) Manager
-  const initAcousticEchoCancellation = useCallback(async () => {
-    if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      console.warn('[AUDIO] getUserMedia not available in this browser');
-      return;
-    }
-
-    if (aecStreamRef.current) {
-      aecStreamRef.current.getTracks().forEach((track) => track.stop());
-      aecStreamRef.current = null;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: { ideal: true },
-          noiseSuppression: { ideal: true },
-          autoGainControl: { ideal: true },
-        },
-      });
-
-      aecStreamRef.current = stream;
-
-      const track = stream.getAudioTracks()[0];
-      if (track) {
-        const settings = track.getSettings?.() || {};
-        console.log(
-          `[AUDIO] Echo cancellation support detected (echoCancellation: ${settings.echoCancellation ?? true}, noiseSuppression: ${settings.noiseSuppression ?? true}, autoGainControl: ${settings.autoGainControl ?? true})`
-        );
-      }
-    } catch (err: any) {
-      console.warn('[AUDIO] getUserMedia with AEC constraints could not be initialized:', err);
-    }
-  }, []);
-
-  const releaseAcousticEchoCancellation = useCallback(() => {
-    if (aecStreamRef.current) {
-      aecStreamRef.current.getTracks().forEach((track) => track.stop());
-      aecStreamRef.current = null;
-      console.log('[AUDIO] Microphone stream released');
-    }
-  }, []);
 
   // Helper: Detects whether incoming userText is an acoustic echo of the AI's own recent speech
   const isEchoOfAISpeech = (userText: string, lastAiText: string, spokenTimestamp: number): boolean => {
@@ -211,9 +167,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (sessionTimerRef.current) {
         clearInterval(sessionTimerRef.current);
       }
-      releaseAcousticEchoCancellation();
     };
-  }, [releaseAcousticEchoCancellation]);
+  }, []);
 
   const { speak, stop: stopSpeech, isSpeaking } = useSpeechSynthesis();
 
@@ -251,6 +206,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     resetTranscript,
   } = useSpeechRecognition({
     isAISpeaking: () => isAISpeakingRef.current,
+    isProcessing: () => isProcessingRef.current,
     onStart: () => {
       // RULE: Set isListening TRUE and state to 'LISTENING' only when recognition.onstart actually fires!
       console.log('[VoiceContext] 🎙️ recognition.onstart confirmed! Setting state to LISTENING');
@@ -261,12 +217,12 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     },
     onSpeechStart: () => {
-      if (isAISpeakingRef.current) {
-        console.log('[AUDIO] Ignoring recognition during AI playback (onSpeechStart)');
+      if (isAISpeakingRef.current || isProcessingRef.current) {
+        console.log('[AUDIO] Ignoring recognition during AI playback or processing (onSpeechStart)');
         return;
       }
       console.log('[VoiceContext] 🗣️ User speech started');
-      if (voiceSessionActiveRef.current && !isProcessingRef.current) {
+      if (voiceSessionActiveRef.current) {
         setState('USER_SPEAKING');
       }
     },
@@ -276,6 +232,18 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     onFinalTranscript: (finalText: string) => {
       console.log(`[VoiceContext] 🎯 Final transcript captured: "${finalText}"`);
       handleFinalTranscriptRef.current(finalText);
+    },
+    onNoSpeech: () => {
+      console.log('[VoiceContext] Silence detected in turn. Restarting turn...');
+      if (
+        voiceSessionActiveRef.current &&
+        isComponentMountedRef.current &&
+        !isAISpeakingRef.current &&
+        !isProcessingRef.current &&
+        !isAwaitingConfirmationRef.current
+      ) {
+        safeRestartMicRef.current();
+      }
     },
     onEnd: () => {
       console.log('[VoiceContext] 🛑 recognition.onend event received');
@@ -287,7 +255,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         !isProcessingRef.current &&
         !isAwaitingConfirmationRef.current
       ) {
-        console.log('[VoiceContext] 🔄 Browser silence timeout; restarting recognition...');
+        console.log('[VoiceContext] 🔄 Turn ended; restarting recognition...');
         safeRestartMicRef.current();
       }
     },
@@ -382,7 +350,7 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [resetTranscript, startListening]);
 
   // Session Initiation
-  const startSession = useCallback(async () => {
+  const startSession = useCallback(() => {
     console.log('[VoiceContext] ▶️ Starting continuous voice session...');
     if (restartTimerRef.current) {
       clearTimeout(restartTimerRef.current);
@@ -411,16 +379,22 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setState('STARTING');
     setIsModalOpen(true);
 
-    // Initialize hardware / driver acoustic echo cancellation
-    await initAcousticEchoCancellation();
+    // Secure context check (mobile Chrome requires HTTPS for SpeechRecognition)
+    if (
+      typeof window !== 'undefined' &&
+      !window.isSecureContext &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1'
+    ) {
+      console.warn('[VoiceContext] Insecure context: Web Speech API requires HTTPS on remote mobile devices.');
+      setError('Microphone requires a secure connection (HTTPS). Please open the site using https://');
+      setState('ERROR');
+      return;
+    }
 
-    // Call startListening safely once AEC media stream is initialized
-    setTimeout(() => {
-      if (voiceSessionActiveRef.current && isComponentMountedRef.current && !isAISpeakingRef.current) {
-        startListening({ lang: currentLanguageRef.current });
-      }
-    }, 100);
-  }, [resetTranscript, startListening, initAcousticEchoCancellation]);
+    // STATE 1 — USER LISTENING: Start SpeechRecognition immediately
+    startListening({ lang: currentLanguageRef.current });
+  }, [resetTranscript, startListening]);
 
   // Session Termination
   const endSession = useCallback(() => {
@@ -438,9 +412,8 @@ export const VoiceProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsSessionActive(false);
     abortListening();
     stopSpeech();
-    releaseAcousticEchoCancellation();
     setState('STOPPED');
-  }, [abortListening, stopSpeech, releaseAcousticEchoCancellation]);
+  }, [abortListening, stopSpeech]);
 
   const toggleSession = useCallback(() => {
     if (voiceSessionActiveRef.current) {
