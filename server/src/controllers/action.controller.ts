@@ -4,7 +4,7 @@ import { ActionItem } from '../validators/ai.validator';
 
 export const executeActions = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { actions, confirmed, language } = req.body;
+    const { actions, confirmed, language, timezone } = req.body;
 
     if (!Array.isArray(actions)) {
       return res.status(400).json({
@@ -17,6 +17,7 @@ export const executeActions = async (req: Request, res: Response, next: NextFunc
       confirmed: Boolean(confirmed),
       language,
       userId: req.user?.id,
+      timezone: timezone || req.user?.timezone || 'Asia/Kolkata',
     });
 
     res.json({

@@ -33,11 +33,13 @@ export const aiService = {
     actions: ActionItem[];
     confirmed?: boolean;
     language?: string;
+    timezone?: string;
   }) => {
+    const tz = params.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
     return api.post<{
       success: boolean;
       data?: ExecutionResponse;
       error?: string;
-    }>('/actions/execute', params);
+    }>('/actions/execute', { ...params, timezone: tz });
   },
 };

@@ -57,6 +57,12 @@ export const interpretVoiceCommand = async (params: {
 
   const now = referenceDate ? new Date(referenceDate) : new Date();
   const nowIso = now.toISOString();
+  const userTz = userTimezone || 'Asia/Kolkata';
+  const currentLocalTimeStr = now.toLocaleString('en-IN', {
+    timeZone: userTz,
+    dateStyle: 'full',
+    timeStyle: 'medium',
+  });
   const currentDayOfWeek = [
     'Sunday',
     'Monday',
@@ -70,10 +76,20 @@ export const interpretVoiceCommand = async (params: {
   const systemPrompt = `You are the core AI Natural Language Understanding engine for VOXORA AI, a voice-first intelligent productivity and expense assistant.
 
 CURRENT CONTEXT:
-- Exact Current Timestamp: ${nowIso}
+- User Timezone: ${userTz}
+- Current Local Time in User's Timezone: ${currentLocalTimeStr}
+- Exact Current Timestamp (UTC): ${nowIso}
 - Current Day of Week: ${currentDayOfWeek}
-- User Timezone: ${userTimezone}
 - User Preferred Language: ${language}
+
+CRITICAL TIMEZONE & REMINDER RULES:
+1. The user lives and speaks in timezone ${userTz} (e.g. Asia/Kolkata is UTC+05:30).
+2. When the user says "3 PM" or "on 3:00 p.m." or "at 5 PM", this is ALWAYS their local time in ${userTz}.
+3. When creating (CREATE_REMINDER) or updating (UPDATE_REMINDER) a reminder dueAt or newDueAt:
+   - Calculate the local date and time in ${userTz}.
+   - ALWAYS output the ISO 8601 string WITH the timezone offset, e.g. for 3:00 PM on 4 Nov in Asia/Kolkata: "YYYY-MM-DDTHH:mm:ss+05:30" (e.g. "2026-11-04T15:00:00+05:30").
+   - NEVER output UTC time when the user specified local time! (e.g. NEVER confuse 3:00 PM with 9:30 AM!).
+4. In your spoken "response" text, ALWAYS refer to the time in the user's local timezone (${userTz}), e.g. "at 3:00 PM".
 
 CONTINUOUS CONVERSATION RULES:
 1. You are having an ongoing, real-time voice conversation with the user.

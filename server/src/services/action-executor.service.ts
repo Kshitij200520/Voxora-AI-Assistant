@@ -36,7 +36,7 @@ export class ActionExecutorService {
    */
   public static async executeActions(
     actions: ActionItem[],
-    options: { confirmed?: boolean; language?: string; userId?: string } = {}
+    options: { confirmed?: boolean; language?: string; userId?: string; timezone?: string } = {}
   ): Promise<ExecutionResponse> {
     const { connected } = getDatabaseStatus();
     if (!connected) {
@@ -115,9 +115,9 @@ export class ActionExecutorService {
 
   private static async executeSingleAction(
     action: ActionItem,
-    options: { confirmed?: boolean; language?: string; userId?: string }
+    options: { confirmed?: boolean; language?: string; userId?: string; timezone?: string }
   ): Promise<ActionResult> {
-    const { userId } = options;
+    const { userId, timezone = 'Asia/Kolkata' } = options;
 
     switch (action.type) {
       case 'CREATE_EXPENSE':
@@ -142,13 +142,13 @@ export class ActionExecutorService {
         return await this.deleteTask(action.payload, userId, options.confirmed);
 
       case 'CREATE_REMINDER':
-        return await this.createReminder(action.payload, userId);
+        return await this.createReminder(action.payload, userId, timezone);
 
       case 'UPDATE_REMINDER':
-        return await this.updateReminder(action.payload, userId);
+        return await this.updateReminder(action.payload, userId, timezone);
 
       case 'DELETE_REMINDER':
-        return await this.deleteReminder(action.payload, userId, options.confirmed);
+        return await this.deleteReminder(action.payload, userId, options.confirmed, timezone);
 
       case 'QUERY_EXPENSES':
         return await this.queryExpenses(action.payload, userId);
@@ -552,7 +552,7 @@ export class ActionExecutorService {
   }
 
   // --- REMINDER HANDLERS ---
-  private static async createReminder(payload: any, userId?: string): Promise<ActionResult> {
+  private static async createReminder(payload: any, userId?: string, timezone: string = 'Asia/Kolkata'): Promise<ActionResult> {
     const title = (payload.title || '').trim();
     if (!title) {
       return {
@@ -594,10 +594,12 @@ export class ActionExecutorService {
     });
 
     const timeFormatted = dueAt.toLocaleString('en-IN', {
+      timeZone: timezone,
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
+      hour12: true,
     });
 
     await logActivity({
@@ -620,7 +622,7 @@ export class ActionExecutorService {
     };
   }
 
-  private static async updateReminder(payload: any, userId?: string): Promise<ActionResult> {
+  private static async updateReminder(payload: any, userId?: string, timezone: string = 'Asia/Kolkata'): Promise<ActionResult> {
     const baseFilter: any = {};
     if (userId) baseFilter.userId = new Types.ObjectId(userId);
 
@@ -666,10 +668,12 @@ export class ActionExecutorService {
     await target.save();
 
     const timeFormatted = new Date(target.dueAt).toLocaleString('en-IN', {
+      timeZone: timezone,
       month: 'short',
       day: 'numeric',
-      hour: '2-digit',
+      hour: 'numeric',
       minute: '2-digit',
+      hour12: true,
     });
 
     await logActivity({
@@ -692,7 +696,7 @@ export class ActionExecutorService {
     };
   }
 
-  private static async deleteReminder(payload: any, userId?: string, confirmed?: boolean): Promise<ActionResult> {
+  private static async deleteReminder(payload: any, userId?: string, confirmed?: boolean, timezone: string = 'Asia/Kolkata'): Promise<ActionResult> {
     const baseFilter: any = {};
     if (userId) baseFilter.userId = new Types.ObjectId(userId);
 
@@ -717,18 +721,27 @@ export class ActionExecutorService {
     }
 
     if (!confirmed) {
+      const timeFormatted = new Date(target.dueAt).toLocaleString('en-IN', {
+        timeZone: timezone,
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+
       return {
         id: target._id.toString(),
         type: 'DELETE_REMINDER',
         success: false,
         status: 'AWAITING_CONFIRMATION',
         requiresConfirmation: true,
-        message: `Are you sure you want to delete the reminder "${target.title}"?`,
+        message: `Are you sure you want to delete the reminder "${target.title}" scheduled for ${timeFormatted}?`,
         confirmationDetails: {
           entityType: 'reminder',
           entityId: target._id.toString(),
           title: `Delete Reminder: ${target.title}`,
-          message: `Confirm deleting reminder scheduled for ${new Date(target.dueAt).toLocaleString()}.`,
+          message: `Confirm deleting reminder scheduled for ${timeFormatted}.`,
         },
       };
     }
